@@ -31,24 +31,25 @@ export default function HeroSection() {
 
   return (
     <section className="relative min-h-[92vh] flex items-center overflow-hidden bg-primary-dark">
-      {/* Background layers */}
+      {/* Background layers - Softened for better image visibility */}
       <div className="absolute inset-0">
         {showImage && (
           <Image
             src={images.hero.home}
             alt="Construction site"
             fill
-            className="object-cover opacity-40"
+            className="object-cover opacity-65" /* Increased from 40% to 65% for better visibility */
             priority
             unoptimized
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-dark via-primary-dark/85 to-primary/20" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(245,158,11,0.1),transparent_60%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(15,36,64,0.8),transparent_60%)]" />
+        {/* Softer gradient overlay: keeps left side dark for text contrast, right side transparent */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary-dark/90 via-primary-dark/60 to-primary-dark/30" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(245,158,11,0.08),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(8,22,40,0.6),transparent_60%)]" />
       </div>
 
-      <div className="absolute inset-0 grid-bg opacity-30" />
+      <div className="absolute inset-0 grid-bg opacity-15" />
 
       <div className="absolute top-20 right-20 w-72 h-72 bg-accent/5 rounded-full blur-3xl animate-float" />
       <div className="absolute bottom-20 left-20 w-96 h-96 bg-primary-light/10 rounded-full blur-3xl" />
@@ -71,7 +72,7 @@ export default function HeroSection() {
               Infrastructure.
             </h1>
 
-            <p className="text-lg sm:text-xl text-white/60 mb-8 max-w-2xl leading-relaxed animate-fade-in-up opacity-0-start delay-200">
+            <p className="text-lg sm:text-xl text-white/80 mb-8 max-w-2xl leading-relaxed animate-fade-in-up opacity-0-start delay-200 drop-shadow-sm">
               A trusted Ethiopian construction group delivering buildings, roads,
               bridges, and water works with international standards of quality,
               safety, and engineering excellence.
@@ -88,9 +89,9 @@ export default function HeroSection() {
               </Link>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-6 border-t border-white/10 animate-fade-in-up opacity-0-start delay-400">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-6 border-t border-white/15 animate-fade-in-up opacity-0-start delay-400">
               {trustBadges.map((badge) => (
-                <div key={badge} className="flex items-center gap-1.5 text-xs text-white/50">
+                <div key={badge} className="flex items-center gap-1.5 text-xs text-white/70 font-medium">
                   <ShieldCheck size={12} className="text-accent" />
                   {badge}
                 </div>
@@ -101,7 +102,7 @@ export default function HeroSection() {
           <div className="lg:col-span-5 hidden lg:block animate-fade-in-right opacity-0-start delay-200">
             <div className="relative">
               <div className="absolute -inset-4 bg-gradient-to-br from-accent/15 to-primary-light/15 blur-3xl rounded-3xl" />
-              <div className="relative glass-elevated rounded-3xl p-8">
+              <div className="relative glass-elevated rounded-3xl p-8 backdrop-blur-md">
                 <div className="flex items-center gap-2 mb-6">
                   <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
                   <span className="text-xs uppercase tracking-wider text-emerald-300 font-semibold">
@@ -111,7 +112,7 @@ export default function HeroSection() {
                 <h3 className="text-white font-bold text-2xl mb-1">
                   16+ Projects
                 </h3>
-                <p className="text-white/50 text-sm mb-6">
+                <p className="text-white/60 text-sm mb-6">
                   Successfully delivered across Ethiopia
                 </p>
 
@@ -121,7 +122,7 @@ export default function HeroSection() {
                       <div className="w-7 h-7 bg-accent/15 border border-accent/25 rounded-lg flex items-center justify-center shrink-0">
                         <CheckCircle size={14} className="text-accent" />
                       </div>
-                      <span className="text-white/80 text-sm leading-relaxed pt-1">
+                      <span className="text-white/90 text-sm leading-relaxed pt-1 font-medium">
                         {item}
                       </span>
                     </div>
@@ -130,7 +131,7 @@ export default function HeroSection() {
 
                 <div className="mt-7 pt-6 border-t border-white/10 flex items-center gap-3">
                   <HardHat size={16} className="text-accent" />
-                  <span className="text-xs text-white/50">
+                  <span className="text-xs text-white/60">
                     Trusted partner for government & private sector
                   </span>
                 </div>

@@ -5,3 +5,26 @@ out/
 build/
 *.log
 .env*.local
+# AI / editor local configs
+.claude/
+.cursor/
+.vscode/
+.idea/
+
+# Next.js
+.next/
+out/
+dist/
+
+# Dependencies
+node_modules/
+
+# Env
+.env*.local
+.env
+
+# OS / misc
+.DS_Store
+Thumbs.db
+*.log
+Screenshot*.png

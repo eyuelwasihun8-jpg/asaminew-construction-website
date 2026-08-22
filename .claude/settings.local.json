@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(timeout 25 npx next dev)",
-      "Bash(grep -iE \"^\\(linkedin|twitter|facebook|instagram|message-circle\\)\\\\.mjs$\")"
-    ]
-  }
-}

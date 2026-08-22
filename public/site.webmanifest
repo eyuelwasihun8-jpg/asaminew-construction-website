@@ -1,0 +1,17 @@
+{
+  "name": "Asaminew Teshome Construction Group",
+  "short_name": "ATC",
+  "description": "Leading Construction Company in Ethiopia",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f2440",
+  "theme_color": "#0f2440",
+  "icons": [
+    {
+      "src": "https://res.cloudinary.com/sxe9lc5o/image/upload/v1787391289/Screenshot_2026-08-22_122311.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

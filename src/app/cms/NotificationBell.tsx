@@ -10,7 +10,7 @@ import {
   Check,
   Inbox,
   Trash2,
-  Loader2,
+  RotateCcw,
 } from "lucide-react";
 import { getDb } from "@/lib/firebase";
 import {
@@ -19,13 +19,11 @@ import {
   orderBy,
   limit,
   onSnapshot,
-  deleteDoc,
-  doc,
 } from "firebase/firestore";
 
 interface Notification {
-  id: string;          // UI id: "contact_xxx" or "app_xxx"
-  docId: string;       // real Firestore document id
+  id: string;      // UI id: "contact_xxx" / "app_xxx"
+  docId: string;   // Firestore document id (read-only here)
   type: "contact" | "application";
   title: string;
   subtitle: string;
@@ -34,6 +32,7 @@ interface Notification {
 }
 
 const LAST_SEEN_KEY = "cms_notifications_last_seen";
+const DISMISSED_KEY = "cms_notifications_dismissed";
 
 function getLastSeen(): number {
   if (typeof window === "undefined") return 0;
@@ -44,6 +43,26 @@ function getLastSeen(): number {
 function setLastSeen(ts: number) {
   if (typeof window === "undefined") return;
   localStorage.setItem(LAST_SEEN_KEY, String(ts));
+}
+
+function getDismissed(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(DISMISSED_KEY);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveDismissed(ids: string[]) {
+  if (typeof window === "undefined") return;
+  try {
+    // keep the list small
+    localStorage.setItem(DISMISSED_KEY, JSON.stringify(ids.slice(0, 200)));
+  } catch {
+    // ignore
+  }
 }
 
 function timeAgo(ms: number): string {
@@ -63,15 +82,16 @@ function timeAgo(ms: number): string {
 }
 
 export default function NotificationBell() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [allNotifications, setAllNotifications] = useState<Notification[]>([]);
+  const [dismissed, setDismissed] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
   const [lastSeen, setLastSeenState] = useState<number>(0);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const initialLoadRef = useRef(true);
 
   useEffect(() => {
     setLastSeenState(getLastSeen());
+    setDismissed(getDismissed());
   }, []);
 
   useEffect(() => {
@@ -95,7 +115,7 @@ export default function NotificationBell() {
       const merged = [...contactsData, ...applicationsData]
         .sort((a, b) => b.createdAtMs - a.createdAtMs)
         .slice(0, 30);
-      setNotifications(merged);
+      setAllNotifications(merged);
 
       if (
         !initialLoadRef.current &&
@@ -110,10 +130,7 @@ export default function NotificationBell() {
                 newest.type === "contact"
                   ? "New message received"
                   : "New application received",
-                {
-                  body: newest.title,
-                  icon: "/favicon.ico",
-                }
+                { body: newest.title, icon: "/favicon.ico" }
               );
             } catch {
               // ignore
@@ -219,9 +236,20 @@ export default function NotificationBell() {
     }
   }, [open]);
 
+  // Visible = all notifications minus dismissed ones
+  const notifications = useMemo(
+    () => allNotifications.filter((n) => !dismissed.includes(n.id)),
+    [allNotifications, dismissed]
+  );
+
   const unreadCount = useMemo(
     () => notifications.filter((n) => n.createdAtMs > lastSeen).length,
     [notifications, lastSeen]
+  );
+
+  const dismissedCount = useMemo(
+    () => allNotifications.filter((n) => dismissed.includes(n.id)).length,
+    [allNotifications, dismissed]
   );
 
   function markAllRead() {
@@ -235,36 +263,29 @@ export default function NotificationBell() {
     setOpen(false);
   }
 
-  async function handleDelete(
-    e: React.MouseEvent,
-    notification: Notification
-  ) {
+  // ✅ Only hides the notification. Does NOT delete anything from Firestore.
+  function dismissNotification(e: React.MouseEvent, notificationId: string) {
     e.preventDefault();
     e.stopPropagation();
+    const next = [notificationId, ...dismissed];
+    setDismissed(next);
+    saveDismissed(next);
+  }
 
-    const label =
-      notification.type === "contact" ? "message" : "application";
-    if (!confirm(`Delete this ${label}? This cannot be undone.`)) return;
+  function dismissAll(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    const next = [...allNotifications.map((n) => n.id), ...dismissed];
+    setDismissed(next);
+    saveDismissed(next);
+    markAllRead();
+  }
 
-    setDeletingId(notification.id);
-
-    // Optimistic remove from list
-    const backup = notifications;
-    setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
-
-    try {
-      const db = getDb();
-      const collectionName =
-        notification.type === "contact" ? "contacts" : "applications";
-      await deleteDoc(doc(db, collectionName, notification.docId));
-      console.log(`✅ Deleted ${collectionName}/${notification.docId}`);
-    } catch (err) {
-      console.error("Delete notification error:", err);
-      setNotifications(backup); // rollback
-      alert(`Failed to delete ${label}. Please try again.`);
-    } finally {
-      setDeletingId(null);
-    }
+  function restoreDismissed(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDismissed([]);
+    saveDismissed([]);
   }
 
   return (
@@ -302,7 +323,7 @@ export default function NotificationBell() {
                   className="text-[11px] font-medium text-primary hover:text-primary-light inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-white transition-colors"
                 >
                   <Check size={11} />
-                  Mark all read
+                  Mark read
                 </button>
               )}
               <button
@@ -315,32 +336,51 @@ export default function NotificationBell() {
             </div>
           </div>
 
+          {/* Info line */}
+          <div className="px-4 py-2 bg-blue-50/50 border-b border-blue-100">
+            <p className="text-[11px] text-slate-600">
+              Clearing a notification only hides it here. Your messages and
+              applications stay safe.
+            </p>
+          </div>
+
           {/* List */}
           {notifications.length === 0 ? (
             <div className="px-6 py-12 text-center">
               <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
                 <Inbox size={20} className="text-slate-400" />
               </div>
-              <p className="text-slate-700 text-sm font-medium">No notifications yet</p>
-              <p className="text-slate-400 text-xs mt-1">
-                New messages and applications will appear here.
+              <p className="text-slate-700 text-sm font-medium">
+                {dismissedCount > 0 ? "All caught up" : "No notifications yet"}
               </p>
+              <p className="text-slate-400 text-xs mt-1">
+                {dismissedCount > 0
+                  ? "You cleared your recent notifications."
+                  : "New messages and applications will appear here."}
+              </p>
+              {dismissedCount > 0 && (
+                <button
+                  onClick={restoreDismissed}
+                  className="mt-4 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary-light px-3 py-1.5 rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  <RotateCcw size={12} />
+                  Restore cleared notifications
+                </button>
+              )}
             </div>
           ) : (
             <ul className="max-h-[400px] overflow-y-auto divide-y divide-slate-50">
               {notifications.map((n) => {
                 const isUnread = n.createdAtMs > lastSeen;
                 const Icon = n.type === "contact" ? MessageSquare : FileText;
-                const isDeleting = deletingId === n.id;
 
                 return (
                   <li key={n.id} className="group relative">
                     <div
-                      className={`flex items-start gap-3 px-4 py-3 transition-colors ${
+                      className={`flex items-start gap-3 px-4 py-3 transition-colors hover:bg-slate-50 ${
                         isUnread ? "bg-accent/[0.03]" : ""
-                      } ${isDeleting ? "opacity-50" : "hover:bg-slate-50"}`}
+                      }`}
                     >
-                      {/* Clickable area → go to page */}
                       <Link
                         href={n.href}
                         onClick={handleItemClick}
@@ -365,7 +405,9 @@ export default function NotificationBell() {
                             )}
                           </div>
                           <div className="text-xs text-slate-500 truncate mt-0.5">
-                            {n.type === "contact" ? "Message: " : "Applied for: "}
+                            {n.type === "contact"
+                              ? "Message: "
+                              : "Applied for: "}
                             {n.subtitle}
                           </div>
                           <div className="text-[11px] text-slate-400 mt-1">
@@ -374,22 +416,13 @@ export default function NotificationBell() {
                         </div>
                       </Link>
 
-                      {/* 🗑️ Delete button */}
+                      {/* Clear (hide only) */}
                       <button
-                        onClick={(e) => handleDelete(e, n)}
-                        disabled={isDeleting}
-                        title={
-                          n.type === "contact"
-                            ? "Delete message"
-                            : "Delete application"
-                        }
-                        className="shrink-0 w-8 h-8 inline-flex items-center justify-center text-slate-300 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 disabled:opacity-100"
+                        onClick={(e) => dismissNotification(e, n.id)}
+                        title="Clear this notification (does not delete data)"
+                        className="shrink-0 w-8 h-8 inline-flex items-center justify-center text-slate-300 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                       >
-                        {isDeleting ? (
-                          <Loader2 size={14} className="animate-spin text-slate-400" />
-                        ) : (
-                          <Trash2 size={14} />
-                        )}
+                        <X size={14} />
                       </button>
                     </div>
                   </li>
@@ -399,27 +432,44 @@ export default function NotificationBell() {
           )}
 
           {/* Footer */}
-          {notifications.length > 0 && (
-            <div className="border-t border-slate-100 bg-slate-50/50 px-4 py-2 flex items-center justify-between text-[11px] text-slate-500">
-              <span>Showing {notifications.length} recent</span>
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/cms/contacts"
-                  onClick={handleItemClick}
-                  className="hover:text-primary font-medium"
+          <div className="border-t border-slate-100 bg-slate-50/50 px-4 py-2 flex items-center justify-between text-[11px] text-slate-500">
+            <div className="flex items-center gap-3">
+              {notifications.length > 0 && (
+                <button
+                  onClick={dismissAll}
+                  className="inline-flex items-center gap-1 hover:text-slate-800 font-medium"
                 >
-                  All messages
-                </Link>
-                <Link
-                  href="/cms/applications"
-                  onClick={handleItemClick}
-                  className="hover:text-primary font-medium"
+                  <Trash2 size={11} />
+                  Clear all
+                </button>
+              )}
+              {dismissedCount > 0 && (
+                <button
+                  onClick={restoreDismissed}
+                  className="inline-flex items-center gap-1 hover:text-slate-800 font-medium"
                 >
-                  All applications
-                </Link>
-              </div>
+                  <RotateCcw size={11} />
+                  Restore
+                </button>
+              )}
             </div>
-          )}
+            <div className="flex items-center gap-3">
+              <Link
+                href="/cms/contacts"
+                onClick={handleItemClick}
+                className="hover:text-primary font-medium"
+              >
+                Messages
+              </Link>
+              <Link
+                href="/cms/applications"
+                onClick={handleItemClick}
+                className="hover:text-primary font-medium"
+              >
+                Applications
+              </Link>
+            </div>
+          </div>
         </div>
       )}
     </div>

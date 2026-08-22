@@ -39,34 +39,42 @@ export default function Modal({ open, onClose, children, title }: ModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-label={title || "Dialog"}
     >
+      {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in-up"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
+
+      {/* Dialog panel */}
       <div
         ref={dialogRef}
         tabIndex={-1}
-        className="relative bg-white/95 backdrop-blur-xl border border-white/30 rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scale-in shadow-2xl focus:outline-none"
+        className="relative bg-white sm:bg-white/95 backdrop-blur-xl border-0 sm:border border-white/30 rounded-t-3xl sm:rounded-3xl w-full sm:max-w-2xl max-h-[92vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl focus:outline-none animate-scale-in"
       >
-        <div className="sticky top-0 z-10 flex items-center justify-between px-6 py-4 bg-white/80 backdrop-blur-xl border-b border-slate-100 rounded-t-3xl">
+        {/* Sticky header */}
+        <div className="sticky top-0 z-10 flex items-center gap-3 px-4 sm:px-6 py-3.5 bg-white/95 backdrop-blur-xl border-b border-slate-100 rounded-t-3xl">
           {title && (
-            <h2 className="text-lg font-bold text-slate-900">{title}</h2>
+            <h2 className="flex-1 min-w-0 text-base sm:text-lg font-bold text-slate-900 break-words leading-snug pr-2">
+              {title}
+            </h2>
           )}
           <button
             onClick={onClose}
-            className="w-9 h-9 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-all ml-auto"
+            className="w-9 h-9 shrink-0 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-all ml-auto"
             aria-label="Close dialog"
           >
             <X size={18} />
           </button>
         </div>
-        <div>{children}</div>
+
+        {/* Body */}
+        <div className="overflow-x-hidden">{children}</div>
       </div>
     </div>
   );

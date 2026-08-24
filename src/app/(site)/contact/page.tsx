@@ -21,12 +21,12 @@ import { images } from "@/lib/images";
 import { getDb } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
-/** Official Google Maps Direct Link */
+/** Official Direct Google Maps Link */
 const MAPS_LINK = "https://maps.app.goo.gl/cMgfksvbLqxD2CE38";
 
-/** Your exact embed URL */
+/** Exact zoomed-in location embed for Asaminew Teshome Construction */
 const MAP_EMBED_SRC =
-  "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d126123.45934931262!2d38.7710976!3d8.9391104!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x164b815030e3d6e3%3A0x1c398eb2602e3b2b!2sAsaminew%20Teshome%20Construction!5e0!3m2!1sen!2set!4v1787561169286!5m2!1sen!2set";
+  "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d4698.178284827747!2d38.72756414671689!3d8.949544709249414!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x164b815030e3d6e3%3A0x1c398eb2602e3b2b!2sAsaminew%20Teshome%20Construction!5e0!3m2!1sen!2set!4v1787563874158!5m2!1sen!2set";
 
 export default function ContactPage() {
   const [submitting, setSubmitting] = useState(false);
@@ -290,18 +290,32 @@ export default function ContactPage() {
                   </a>
                 </div>
 
-                {/* Your Exact Google Maps Iframe Container */}
-                <div className="w-full h-[450px] sm:h-[500px] bg-slate-100 relative overflow-hidden">
+                {/* Map Wrapper with fixed pixel height preventing collapsing */}
+                <div 
+                  style={{
+                    width: "100%",
+                    height: "480px",
+                    lineHeight: 0,
+                    overflow: "hidden",
+                    background: "#f1f5f9",
+                  }}
+                >
                   <iframe
                     src={MAP_EMBED_SRC}
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="strict-origin-when-cross-origin"
                     title="Asaminew Teshome Construction Location"
-                    className="w-full h-full block"
+                    width="100%"
+                    height="480"
+                    loading="lazy"
+                    allowFullScreen
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      height: "480px",
+                      border: 0,
+                      margin: 0,
+                      padding: 0,
+                    }}
                   />
                 </div>
 

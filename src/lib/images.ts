@@ -49,7 +49,7 @@ export const images = {
   about: {
     story: "https://res.cloudinary.com/sxe9lc5o/image/upload/v1787385093/photo_2026-08-14_12-01-14_3.jpg",
     preview: "https://res.cloudinary.com/sxe9lc5o/image/upload/v1787385071/photo_2025-07-10_15-56-02.jpg",
-    ceo: "",
+    ceo: "https://res.cloudinary.com/sxe9lc5o/image/upload/v1787564829/photo_2026-08-24_12-45-07.jpg",
   },
 
   // ==========================================
@@ -61,7 +61,7 @@ export const images = {
     bridge: "https://res.cloudinary.com/sxe9lc5o/image/upload/v1787385097/photo_2025-01-23_08-43-06.jpg",
     road: "https://res.cloudinary.com/sxe9lc5o/image/upload/v1787385084/photo_2025-07-08_20-38-13_3.jpg",
     waterDam: "https://res.cloudinary.com/sxe9lc5o/image/upload/v1787385073/photo_2025-05-01_19-35-25.jpg",
-    machinery: "",
+    machinery: "https://res.cloudinary.com/sxe9lc5o/image/upload/v1787564842/OIP.webp",
   },
 
   // ==========================================

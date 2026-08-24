@@ -37,10 +37,19 @@ const services = [
 ];
 
 const socials = [
-  { Icon: LinkedinIcon, label: "LinkedIn" },
-  { Icon: FacebookIcon, label: "Facebook" },
-  { Icon: TwitterIcon, label: "Twitter" },
-  { Icon: InstagramIcon, label: "Instagram" },
+  {
+    Icon: LinkedinIcon,
+    label: "LinkedIn",
+    href: "https://www.linkedin.com/in/asaminew-teshome-83156618?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+  },
+  {
+    Icon: FacebookIcon,
+    label: "Facebook",
+    href: "https://www.facebook.com/share/1LpcZSNLKV/",
+  },
+  // Add real URLs when available
+  // { Icon: TwitterIcon, label: "Twitter", href: "https://twitter.com/..." },
+  // { Icon: InstagramIcon, label: "Instagram", href: "https://instagram.com/..." },
 ];
 
 export default function Footer() {
@@ -113,10 +122,12 @@ export default function Footer() {
 
             {/* Socials */}
             <div className="flex items-center gap-2 mt-6">
-              {socials.map(({ Icon, label }) => (
+              {socials.map(({ Icon, label, href }) => (
                 <a
                   key={label}
-                  href="#"
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={label}
                   className="w-9 h-9 inline-flex items-center justify-center bg-slate-900 hover:bg-accent text-slate-400 hover:text-slate-950 rounded-lg border border-slate-800 hover:border-accent transition-all"
                 >

@@ -21,15 +21,16 @@ import { images } from "@/lib/images";
 import { getDb } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
-/** Official company location (Google Maps short link) */
+/** Opens full Google Maps (app / desktop) — same place as second screenshot */
 const MAPS_LINK = "https://maps.app.goo.gl/cMgfksvbLqxD2CE38";
 
 /**
- * Embed that points at the same place as the short link.
- * output=embed works without an API key and follows the shared place.
+ * Street-level embed for Asaminew Teshome Construction
+ * Coords from Google place: 8.9523152, 38.728876
+ * Place: 0x164b815030e3d6e3:0x1c398eb2602e3b2b
  */
 const MAP_EMBED_SRC =
-  "https://maps.google.com/maps?q=https%3A%2F%2Fmaps.app.goo.gl%2FcMgfksvbLqxD2CE38&z=16&output=embed";
+  "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3940.15!2d38.7263!3d8.9523152!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x164b815030e3d6e3%3A0x1c398eb2602e3b2b!2sAsaminew%20Teshome%20Construction!5e0!3m2!1sen!2set!4v1700000000000!5m2!1sen!2set";
 
 export default function ContactPage() {
   const [submitting, setSubmitting] = useState(false);
@@ -57,7 +58,7 @@ export default function ContactPage() {
       }
 
       const db = getDb();
-      const docRef = await addDoc(collection(db, "contacts"), {
+      await addDoc(collection(db, "contacts"), {
         name,
         email,
         phone,
@@ -67,14 +68,15 @@ export default function ContactPage() {
         createdAt: serverTimestamp(),
       });
 
-      console.log("✅ Contact saved with ID:", docRef.id);
-
       setSubmitted(true);
       form.reset();
       toast("success", "Your message has been sent successfully!");
     } catch (error) {
-      console.error("❌ Contact submit error:", error);
-      toast("error", "There was an error sending your message. Please try again.");
+      console.error("Contact submit error:", error);
+      toast(
+        "error",
+        "There was an error sending your message. Please try again."
+      );
     }
     setSubmitting(false);
   }
@@ -88,9 +90,13 @@ export default function ContactPage() {
 
   return (
     <>
-      <PageHero title="Contact Us" breadcrumb="Home" image={images.hero.contact} />
+      <PageHero
+        title="Contact Us"
+        breadcrumb="Home"
+        image={images.hero.contact}
+      />
 
-      {/* Contact info cards */}
+      {/* Info cards */}
       <section className="py-16 bg-white">
         <div className="section-container">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 -mt-24 relative z-20">
@@ -116,10 +122,10 @@ export default function ContactPage() {
       {/* Form + Map */}
       <section className="py-20 bg-slate-50">
         <div className="section-container">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
-            {/* Contact form */}
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-stretch">
+            {/* Form */}
             <AnimateOnScroll animation="animate-fade-in-left">
-              <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-8 lg:p-10 h-full">
+              <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-8 lg:p-10 h-full flex flex-col">
                 <div className="flex items-center gap-3 mb-8">
                   <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center shrink-0">
                     <MessageCircle size={24} className="text-accent" />
@@ -135,12 +141,12 @@ export default function ContactPage() {
                 </div>
 
                 {submitted ? (
-                  <div className="text-center py-12">
+                  <div className="flex-1 flex flex-col items-center justify-center text-center py-12">
                     <CheckCircle size={64} className="text-accent mx-auto mb-6" />
                     <h3 className="text-xl font-bold text-primary mb-3">
                       Message Sent!
                     </h3>
-                    <p className="text-slate-500 mb-6">
+                    <p className="text-slate-500 mb-6 max-w-sm">
                       Thank you for reaching out. We will respond shortly.
                     </p>
                     <button
@@ -152,7 +158,10 @@ export default function ContactPage() {
                     </button>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-5">
+                  <form
+                    onSubmit={handleSubmit}
+                    className="space-y-5 flex-1 flex flex-col"
+                  >
                     <div className="grid sm:grid-cols-2 gap-5">
                       <div>
                         <label
@@ -223,7 +232,7 @@ export default function ContactPage() {
                       </div>
                     </div>
 
-                    <div>
+                    <div className="flex-1 flex flex-col">
                       <label
                         htmlFor="contact-message"
                         className="block text-sm font-medium text-slate-700 mb-1.5"
@@ -235,7 +244,7 @@ export default function ContactPage() {
                         name="message"
                         required
                         rows={5}
-                        className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all resize-none bg-white"
+                        className="w-full flex-1 min-h-[140px] border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all resize-none bg-white"
                         placeholder="Write your message..."
                       />
                     </div>
@@ -243,7 +252,7 @@ export default function ContactPage() {
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50 mt-auto"
                     >
                       {submitting ? (
                         <>
@@ -260,17 +269,17 @@ export default function ContactPage() {
               </div>
             </AnimateOnScroll>
 
-            {/* Map card */}
+            {/* Map — full height street map + pin (like Google Maps place view) */}
             <AnimateOnScroll animation="animate-fade-in-right">
-              <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden flex flex-col h-full min-h-[480px] sm:min-h-[560px]">
+              <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden flex flex-col h-full min-h-[560px]">
                 {/* Header */}
-                <div className="p-5 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shrink-0">
+                <div className="p-5 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 shrink-0">
                   <div className="min-w-0">
                     <h3 className="font-bold text-primary text-lg flex items-center gap-2">
                       <MapPin size={20} className="text-accent shrink-0" />
                       Our Location
                     </h3>
-                    <p className="text-slate-500 text-sm mt-1 break-words">
+                    <p className="text-slate-500 text-sm mt-1.5 leading-relaxed break-words">
                       {companyInfo.address}
                     </p>
                   </div>
@@ -279,7 +288,7 @@ export default function ContactPage() {
                     href={MAPS_LINK}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-center gap-2 shrink-0 px-4 py-2.5 rounded-xl bg-accent text-primary-dark text-sm font-bold shadow-md shadow-accent/20 hover:bg-accent-light active:scale-[0.98] transition-all"
+                    className="inline-flex items-center justify-center gap-2 shrink-0 px-4 py-2.5 rounded-xl bg-accent text-primary-dark text-sm font-bold shadow-md shadow-accent/25 hover:bg-accent-light active:scale-[0.98] transition-all"
                   >
                     <Navigation size={16} />
                     Get Directions
@@ -287,20 +296,23 @@ export default function ContactPage() {
                   </a>
                 </div>
 
-                {/* Map — fixed height box so iframe always paints */}
-                <div className="relative flex-1 w-full min-h-[320px] sm:min-h-[400px] bg-slate-100">
+                {/* Map fills the card — min height so it never collapses */}
+                <div className="relative w-full flex-1 min-h-[380px] sm:min-h-[440px] lg:min-h-[500px] bg-slate-100">
                   <iframe
                     src={MAP_EMBED_SRC}
-                    title="Company office location"
-                    className="absolute inset-0 w-full h-full border-0"
+                    title="Asaminew Teshome Construction location"
+                    className="absolute inset-0 block w-full h-full border-0"
                     loading="lazy"
                     allowFullScreen
-                    referrerPolicy="no-referrer-when-downgrade"
+                    referrerPolicy="strict-origin-when-cross-origin"
                   />
                 </div>
 
-                {/* Footer link */}
-                <div className="px-5 sm:px-6 py-3 border-t border-slate-100 bg-slate-50 shrink-0">
+                {/* Footer */}
+                <div className="px-5 sm:px-6 py-3.5 border-t border-slate-100 bg-slate-50 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                  <p className="text-xs text-slate-500 font-medium">
+                    Asaminew Teshome Construction
+                  </p>
                   <a
                     href={MAPS_LINK}
                     target="_blank"

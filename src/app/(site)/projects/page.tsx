@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import {
   MapPin,
   User,
@@ -15,11 +14,7 @@ import {
   ImageIcon,
   ChevronLeft,
   ChevronRight,
-  Building2,
   Target,
-  Phone,
-  ArrowUpRight,
-  Award,
 } from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
 import PageHero from "@/components/ui/PageHero";
@@ -68,46 +63,41 @@ function getProjectImages(p: Project): string[] {
   );
 }
 
+/** Simple image carousel for the main grid */
 function ImageCarousel({
   urls,
   alt,
-  className = "h-56",
+  className = "aspect-video sm:h-56",
+  rounded = "",
 }: {
   urls: string[];
   alt: string;
   className?: string;
+  rounded?: string;
 }) {
   const [index, setIndex] = useState(0);
   const total = urls.length;
 
-  const prev = useCallback(
-    (e?: React.MouseEvent) => {
-      e?.stopPropagation();
-      setIndex((i) => (i - 1 + total) % total);
-    },
-    [total]
-  );
+  const prev = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setIndex((i) => (i - 1 + total) % total);
+  }, [total]);
 
-  const next = useCallback(
-    (e?: React.MouseEvent) => {
-      e?.stopPropagation();
-      setIndex((i) => (i + 1) % total);
-    },
-    [total]
-  );
+  const next = useCallback((e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setIndex((i) => (i + 1) % total);
+  }, [total]);
 
   if (total === 0) {
     return (
-      <div
-        className={`relative w-full ${className} bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center`}
-      >
-        <ImageIcon size={48} className="text-slate-400" />
+      <div className={`relative w-full ${className} bg-slate-100 flex items-center justify-center ${rounded}`}>
+        <ImageIcon size={48} className="text-slate-300" />
       </div>
     );
   }
 
   return (
-    <div className={`relative w-full ${className} overflow-hidden group/carousel`}>
+    <div className={`relative w-full ${className} overflow-hidden ${rounded} group/carousel`}>
       {urls.map((url, i) => (
         <div
           key={i}
@@ -115,56 +105,28 @@ function ImageCarousel({
             i === index ? "opacity-100 z-[1]" : "opacity-0 z-0"
           }`}
         >
-          <Image
-            src={url}
-            alt={`${alt} — photo ${i + 1}`}
-            fill
-            className="object-cover"
-            unoptimized
-            loading={i === 0 ? "eager" : "lazy"}
-          />
+          <Image src={url} alt={`${alt} — photo ${i + 1}`} fill className="object-cover" unoptimized loading={i === 0 ? "eager" : "lazy"} />
         </div>
       ))}
 
       {total > 1 && (
         <>
-          <button
-            type="button"
-            onClick={prev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 z-[2] w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-opacity"
-            aria-label="Previous photo"
-          >
+          <button type="button" onClick={prev} className="absolute left-2 top-1/2 -translate-y-1/2 z-[2] w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center opacity-0 md:group-hover/carousel:opacity-100 transition-opacity">
             <ChevronLeft size={18} />
           </button>
-          <button
-            type="button"
-            onClick={next}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-[2] w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center opacity-0 group-hover/carousel:opacity-100 transition-opacity"
-            aria-label="Next photo"
-          >
+          <button type="button" onClick={next} className="absolute right-2 top-1/2 -translate-y-1/2 z-[2] w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center opacity-0 md:group-hover/carousel:opacity-100 transition-opacity">
             <ChevronRight size={18} />
           </button>
-
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[2] flex items-center gap-1.5">
             {urls.map((_, i) => (
               <button
                 key={i}
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIndex(i);
-                }}
-                className={`h-2 rounded-full transition-all ${
-                  i === index ? "bg-white w-4" : "bg-white/50 hover:bg-white/80 w-2"
-                }`}
-                aria-label={`Go to photo ${i + 1}`}
+                onClick={(e) => { e.stopPropagation(); setIndex(i); }}
+                className={`w-1.5 h-1.5 rounded-full transition-all ${i === index ? "bg-white w-4" : "bg-white/60"}`}
               />
             ))}
           </div>
-
-          <span className="absolute top-3 right-3 z-[2] bg-black/50 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-            {index + 1}/{total}
-          </span>
         </>
       )}
     </div>
@@ -215,27 +177,23 @@ export default function ProjectsPage() {
 
   const filtered = projects.filter((p) => {
     const matchCategory = activeCategory === "all" || p.category === activeCategory;
-    const matchStatus =
-      activeStatus === "all" || (p.status || "completed") === activeStatus;
+    const matchStatus = activeStatus === "all" || (p.status || "completed") === activeStatus;
     return matchCategory && matchStatus;
   });
 
   return (
     <>
-      <PageHero
-        title="Our Projects Portfolio"
-        breadcrumb="Home"
-        image={images.hero.projects}
-      />
+      <PageHero title="Our Projects Portfolio" breadcrumb="Home" image={images.hero.projects} />
 
+      {/* Sticky Filters */}
       <section className="py-4 sm:py-6 bg-white sticky top-[4.5rem] sm:top-20 z-30 shadow-sm border-b border-slate-100">
         <div className="section-container space-y-3 sm:space-y-4">
-          <div className="flex gap-2 justify-start sm:justify-center overflow-x-auto pb-2 border-b border-slate-100 scrollbar-hide -mx-1 px-1">
+          <div className="flex gap-2 justify-start sm:justify-center overflow-x-auto pb-2 border-b border-slate-100 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
             {statusFilters.map((st) => (
               <button
                 key={st.key}
                 onClick={() => setActiveStatus(st.key)}
-                className={`shrink-0 px-3.5 sm:px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+                className={`shrink-0 px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold transition-all ${
                   activeStatus === st.key
                     ? "bg-primary text-white shadow-md"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -245,15 +203,15 @@ export default function ProjectsPage() {
               </button>
             ))}
           </div>
-          <div className="flex gap-2 justify-start sm:justify-center overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1">
+          <div className="flex gap-2 justify-start sm:justify-center overflow-x-auto pb-1 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
             {categories.map((cat) => (
               <button
                 key={cat.key}
                 onClick={() => setActiveCategory(cat.key)}
-                className={`shrink-0 px-3 sm:px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
                   activeCategory === cat.key
                     ? "bg-accent text-primary-dark shadow-md"
-                    : "bg-slate-50 text-slate-500 hover:bg-slate-100"
+                    : "bg-slate-50 text-slate-500 hover:bg-slate-100 border border-slate-200"
                 }`}
               >
                 {cat.label}
@@ -276,369 +234,208 @@ export default function ProjectsPage() {
                   <FolderOpen size={40} className="text-accent" />
                 </div>
                 <h3 className="text-2xl font-bold text-primary mb-3">No Projects Yet</h3>
-                <p className="text-slate-500 leading-relaxed">
-                  Our project portfolio is being updated. Please check back soon.
-                </p>
-              </div>
-            </AnimateOnScroll>
-          ) : filtered.length === 0 ? (
-            <AnimateOnScroll>
-              <div className="max-w-md mx-auto text-center py-16 px-4">
-                <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Search size={40} className="text-slate-400" />
-                </div>
-                <h3 className="text-xl font-bold text-primary mb-3">
-                  No Matching Projects
-                </h3>
-                <button
-                  onClick={() => {
-                    setActiveCategory("all");
-                    setActiveStatus("all");
-                  }}
-                  className="text-accent font-semibold text-sm hover:underline"
-                >
-                  Clear all filters
-                </button>
+                <p className="text-slate-500 leading-relaxed">Our portfolio is being updated.</p>
               </div>
             </AnimateOnScroll>
           ) : (
-            <>
-              <div className="text-center mb-8 sm:mb-10">
-                <p className="text-slate-400 text-sm">
-                  Showing {filtered.length} project{filtered.length !== 1 ? "s" : ""}
-                </p>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {filtered.map((project, i) => {
+                const imgs = getProjectImages(project);
+                const isCompleted = project.status === "completed";
+                const isInProgress = project.status === "in-progress";
+                const progressPct = project.progress ?? (isCompleted ? 100 : 50);
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {filtered.map((project, i) => {
-                  const imgs = getProjectImages(project);
-                  const isCompleted = project.status === "completed";
-                  const isInProgress = project.status === "in-progress";
-                  const progressPct = project.progress ?? (isCompleted ? 100 : 50);
+                return (
+                  <AnimateOnScroll key={project.id} delay={i * 50}>
+                    <button
+                      onClick={() => setSelectedProject(project)}
+                      className="w-full text-left bg-white rounded-[24px] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer border border-slate-100 flex flex-col h-full"
+                    >
+                      <div className="relative p-2 pb-0">
+                        <ImageCarousel
+                          urls={imgs.length ? imgs : hasImage(images.fallback.project) ? [images.fallback.project] : []}
+                          alt={project.name}
+                          className="aspect-[4/3] sm:aspect-[4/3] rounded-[18px]"
+                        />
+                        <span
+                          className={`absolute top-5 left-5 z-[3] text-[10px] font-bold px-2.5 py-1.5 rounded-lg uppercase tracking-wider flex items-center gap-1.5 shadow-sm backdrop-blur-md ${
+                            isCompleted ? "bg-emerald-500/90 text-white" : isInProgress ? "bg-amber-500/90 text-white" : "bg-slate-800/90 text-white"
+                          }`}
+                        >
+                          {isCompleted ? <CheckCircle2 size={14} /> : isInProgress ? <TrendingUp size={14} /> : <Clock size={14} />}
+                          {isCompleted ? "Completed" : isInProgress ? "In Progress" : "Planning"}
+                        </span>
+                      </div>
 
-                  return (
-                    <AnimateOnScroll key={project.id} delay={i * 60}>
-                      <button
-                        onClick={() => setSelectedProject(project)}
-                        className="w-full max-w-full text-left bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-400 sm:hover:-translate-y-2 group cursor-pointer border border-slate-100 flex flex-col h-full"
-                      >
-                        <div className="relative">
-                          <ImageCarousel
-                            urls={
-                              imgs.length
-                                ? imgs
-                                : hasImage(images.fallback.project)
-                                ? [images.fallback.project]
-                                : []
-                            }
-                            alt={project.name}
-                            className="h-48 sm:h-56"
-                          />
-                          <span
-                            className={`absolute top-3 left-3 z-[3] text-[10px] sm:text-xs font-bold px-2.5 sm:px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-md ${
-                              isCompleted
-                                ? "bg-emerald-500 text-white"
-                                : isInProgress
-                                ? "bg-amber-500 text-white"
-                                : "bg-slate-700 text-white"
-                            }`}
-                          >
-                            {isCompleted ? (
-                              <CheckCircle2 size={12} />
-                            ) : isInProgress ? (
-                              <TrendingUp size={12} />
-                            ) : (
-                              <Clock size={12} />
-                            )}
-                            {isCompleted
-                              ? "Completed"
-                              : isInProgress
-                              ? "In Progress"
-                              : "Planning"}
-                          </span>
-                        </div>
-
-                        <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between min-w-0">
-                          <div className="min-w-0">
-                            <h3 className="font-bold text-primary text-base sm:text-lg mb-2 break-words leading-snug group-hover:text-accent transition-colors">
-                              {project.name}
-                            </h3>
-                            <div className="flex items-center gap-2 text-slate-500 text-xs mb-1 min-w-0">
-                              <User size={13} className="text-accent shrink-0" />
+                      <div className="p-5 flex-1 flex flex-col justify-between min-w-0">
+                        <div className="min-w-0 mb-4">
+                          <h3 className="font-bold text-primary text-lg mb-3 break-words leading-snug group-hover:text-accent transition-colors">
+                            {project.name}
+                          </h3>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2.5 text-slate-500 text-sm min-w-0">
+                              <User size={16} className="text-slate-400 shrink-0" />
                               <span className="truncate">{project.client}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-slate-400 text-xs mb-4 min-w-0">
-                              <MapPin size={13} className="text-accent shrink-0" />
+                            <div className="flex items-center gap-2.5 text-slate-500 text-sm min-w-0">
+                              <MapPin size={16} className="text-slate-400 shrink-0" />
                               <span className="truncate">{project.location}</span>
                             </div>
                           </div>
+                        </div>
 
-                          <div className="pt-3 border-t border-slate-100 w-full min-w-0">
-                            <div className="flex justify-between items-center text-xs font-semibold mb-1 gap-2">
-                              <span className="text-slate-500">Progress</span>
-                              <span
-                                className={`shrink-0 ${
-                                  isCompleted
-                                    ? "text-emerald-600 font-bold"
-                                    : "text-amber-600 font-bold"
-                                }`}
-                              >
-                                {progressPct}%
-                              </span>
-                            </div>
-                            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full transition-all duration-500 ${
-                                  isCompleted
-                                    ? "bg-emerald-500"
-                                    : "bg-gradient-to-r from-amber-500 to-accent"
-                                }`}
-                                style={{
-                                  width: `${Math.min(100, Math.max(0, progressPct))}%`,
-                                }}
-                              />
-                            </div>
+                        <div className="pt-4 border-t border-slate-100/80 w-full min-w-0">
+                          <div className="flex justify-between items-center text-xs font-semibold mb-2">
+                            <span className="text-slate-400 uppercase tracking-wide">Progress</span>
+                            <span className={isCompleted ? "text-emerald-600" : "text-amber-600"}>
+                              {progressPct}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-700 ${
+                                isCompleted ? "bg-emerald-500" : "bg-gradient-to-r from-amber-400 to-amber-500"
+                              }`}
+                              style={{ width: `${Math.min(100, Math.max(0, progressPct))}%` }}
+                            />
                           </div>
                         </div>
-                      </button>
-                    </AnimateOnScroll>
-                  );
-                })}
-              </div>
-            </>
+                      </div>
+                    </button>
+                  </AnimateOnScroll>
+                );
+              })}
+            </div>
           )}
         </div>
       </section>
 
-      {/* ============================================
-          PREMIUM PROJECT DETAIL MODAL
-         ============================================ */}
-      <Modal
-        open={!!selectedProject}
-        onClose={() => setSelectedProject(null)}
-        title={selectedProject?.name}
-        badge={selectedProject?.category}
-        size="lg"
-      >
-        {selectedProject && (() => {
-          const modalImgs = getProjectImages(selectedProject);
-          const displayImgs =
-            modalImgs.length > 0
-              ? modalImgs
-              : hasImage(images.fallback.project)
-              ? [images.fallback.project]
-              : [];
-          const total = displayImgs.length;
-          const isCompleted = selectedProject.status === "completed";
-          const isInProgress = selectedProject.status === "in-progress";
-          const progressPct = selectedProject.progress ?? 100;
+      {/* Premium Detail Modal */}
+      <Modal open={!!selectedProject} onClose={() => setSelectedProject(null)} title={selectedProject?.name}>
+        {selectedProject && (
+          <div className="pb-8">
+            
+            {/* Modal Image Header */}
+            {(() => {
+              const modalImgs = getProjectImages(selectedProject);
+              const displayImgs = modalImgs.length > 0 ? modalImgs : hasImage(images.fallback.project) ? [images.fallback.project] : [];
+              const total = displayImgs.length;
 
-          return (
-            <div className="overflow-x-hidden">
-              {/* Hero image with carousel */}
-              <div className="relative w-full h-60 sm:h-80 lg:h-96 bg-slate-100">
-                {displayImgs.length > 0 ? (
-                  displayImgs.map((url, i) => (
-                    <div
-                      key={i}
-                      className={`absolute inset-0 transition-opacity duration-500 ${
-                        i === modalImgIndex ? "opacity-100 z-[1]" : "opacity-0 z-0"
-                      }`}
-                    >
-                      <Image
-                        src={url}
-                        alt={`${selectedProject.name} ${i + 1}`}
-                        fill
-                        className="object-cover"
-                        unoptimized
-                      />
-                    </div>
-                  ))
-                ) : (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <ImageIcon size={60} className="text-slate-400" />
-                  </div>
-                )}
-
-                <div className="absolute inset-0 bg-gradient-to-t from-primary-dark/80 via-primary-dark/20 to-transparent z-[2] pointer-events-none" />
-
-                {total > 1 && (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => setModalImgIndex((i) => (i - 1 + total) % total)}
-                      className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-[3] w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/90 hover:bg-white text-slate-900 shadow-lg flex items-center justify-center transition-all hover:scale-110"
-                      aria-label="Previous photo"
-                    >
-                      <ChevronLeft size={20} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setModalImgIndex((i) => (i + 1) % total)}
-                      className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-[3] w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/90 hover:bg-white text-slate-900 shadow-lg flex items-center justify-center transition-all hover:scale-110"
-                      aria-label="Next photo"
-                    >
-                      <ChevronRight size={20} />
-                    </button>
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[3] flex gap-1.5 bg-black/40 backdrop-blur-sm px-3 py-1.5 rounded-full">
-                      {displayImgs.map((_, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => setModalImgIndex(i)}
-                          className={`h-1.5 rounded-full transition-all ${
-                            i === modalImgIndex ? "bg-white w-6" : "bg-white/50 w-1.5"
-                          }`}
-                          aria-label={`Go to photo ${i + 1}`}
-                        />
-                      ))}
-                    </div>
-                  </>
-                )}
-
-                {/* Status badge on hero */}
-                <span
-                  className={`absolute bottom-4 left-4 sm:left-6 z-[3] text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wider flex items-center gap-1.5 shadow-lg ${
-                    isCompleted
-                      ? "bg-emerald-500 text-white"
-                      : isInProgress
-                      ? "bg-amber-500 text-white"
-                      : "bg-slate-700 text-white"
-                  }`}
-                >
-                  {isCompleted ? (
-                    <CheckCircle2 size={13} />
-                  ) : isInProgress ? (
-                    <TrendingUp size={13} />
+              return (
+                <div className="relative w-full aspect-[4/3] sm:aspect-video bg-slate-100 overflow-hidden">
+                  {displayImgs.length > 0 ? (
+                    displayImgs.map((url, i) => (
+                      <div key={i} className={`absolute inset-0 transition-opacity duration-500 ${i === modalImgIndex ? "opacity-100 z-[1]" : "opacity-0 z-0"}`}>
+                        <Image src={url} alt={`${selectedProject.name} ${i + 1}`} fill className="object-cover" unoptimized />
+                      </div>
+                    ))
                   ) : (
-                    <Clock size={13} />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <ImageIcon size={40} className="text-slate-300" />
+                    </div>
                   )}
-                  {isCompleted ? "Completed" : isInProgress ? "In Progress" : "Planning"}
-                </span>
+
+                  {/* Badges utilizing your custom global.css .glass-elevated */}
+                  <span className="absolute bottom-4 left-4 z-[3] glass-elevated text-white text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wide">
+                    {selectedProject.category}
+                  </span>
+
+                  {total > 1 && (
+                    <span className="absolute top-4 right-4 z-[3] glass-elevated text-white text-[11px] font-bold px-3 py-1 rounded-full">
+                      {modalImgIndex + 1} / {total}
+                    </span>
+                  )}
+
+                  {total > 1 && (
+                    <>
+                      <button onClick={() => setModalImgIndex((i) => (i - 1 + total) % total)} className="absolute left-3 top-1/2 -translate-y-1/2 z-[3] w-10 h-10 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-md text-white flex items-center justify-center transition-all">
+                        <ChevronLeft size={24} />
+                      </button>
+                      <button onClick={() => setModalImgIndex((i) => (i + 1) % total)} className="absolute right-3 top-1/2 -translate-y-1/2 z-[3] w-10 h-10 rounded-full bg-black/30 hover:bg-black/50 backdrop-blur-md text-white flex items-center justify-center transition-all">
+                        <ChevronRight size={24} />
+                      </button>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Thumbnail Strip (scrollbar-hide from your css) */}
+            {getProjectImages(selectedProject).length > 1 && (
+              <div className="flex gap-3 px-5 sm:px-6 py-4 overflow-x-auto scrollbar-hide">
+                {getProjectImages(selectedProject).map((url, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setModalImgIndex(i)}
+                    className={`relative w-20 h-14 sm:w-24 sm:h-16 rounded-xl overflow-hidden shrink-0 transition-all ${
+                      i === modalImgIndex ? "ring-2 ring-accent ring-offset-2 opacity-100" : "opacity-60 hover:opacity-100"
+                    }`}
+                  >
+                    <Image src={url} alt="" fill className="object-cover" unoptimized />
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Content Details */}
+            <div className="px-5 sm:px-6 pt-2 space-y-6">
+              
+              {/* Premium Progress Card */}
+              <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 shadow-sm">
+                <div className="flex justify-between items-end mb-3">
+                  <div>
+                    <span className="text-slate-400 text-xs font-bold uppercase tracking-wider block mb-1">Project Status</span>
+                    <span className="flex items-center gap-2 font-bold text-slate-800 text-base sm:text-lg">
+                      {selectedProject.status === "completed" ? <CheckCircle2 className="text-emerald-500" size={20} /> : selectedProject.status === "in-progress" ? <TrendingUp className="text-amber-500" size={20} /> : <Clock className="text-slate-500" size={20} />}
+                      <span className="capitalize">{selectedProject.status === "in-progress" ? "In Progress" : selectedProject.status === "planning" ? "Planning" : "Completed"}</span>
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className={`text-lg font-bold ${selectedProject.status === "completed" ? "text-emerald-600" : "text-amber-500"}`}>
+                      {selectedProject.progress ?? 100}%
+                    </span>
+                  </div>
+                </div>
+                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full transition-all duration-700 ${selectedProject.status === "completed" ? "bg-emerald-500" : "bg-gradient-to-r from-amber-400 to-amber-500"}`}
+                    style={{ width: `${Math.min(100, Math.max(0, selectedProject.progress ?? 100))}%` }}
+                  />
+                </div>
               </div>
 
-              {/* Thumbnails strip */}
-              {displayImgs.length > 1 && (
-                <div className="flex gap-2 px-5 sm:px-8 pt-4 pb-2 overflow-x-auto scrollbar-hide bg-white">
-                  {displayImgs.map((url, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => setModalImgIndex(i)}
-                      className={`relative w-20 h-14 sm:w-24 sm:h-16 rounded-lg overflow-hidden shrink-0 border-2 transition-all ${
-                        i === modalImgIndex
-                          ? "border-accent shadow-md scale-105"
-                          : "border-transparent opacity-60 hover:opacity-100"
-                      }`}
-                    >
-                      <Image src={url} alt="" fill className="object-cover" unoptimized />
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Content body */}
-              <div className="px-5 sm:px-8 py-6 sm:py-8 space-y-6">
-                {/* Info stat grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 sm:p-4">
-                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-                      <User size={12} />
-                      Client
-                    </div>
-                    <p className="text-sm font-bold text-slate-900 break-words leading-snug">
-                      {selectedProject.client}
-                    </p>
-                  </div>
-
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 sm:p-4">
-                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-                      <MapPin size={12} />
-                      Location
-                    </div>
-                    <p className="text-sm font-bold text-slate-900 break-words leading-snug">
-                      {selectedProject.location}
-                    </p>
-                  </div>
-
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 sm:p-4 col-span-2 sm:col-span-1">
-                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-                      <Building2 size={12} />
-                      Category
-                    </div>
-                    <p className="text-sm font-bold text-slate-900 capitalize break-words leading-snug">
-                      {selectedProject.category}
-                    </p>
+              {/* Client & Location grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-100 shadow-sm">
+                  <div className="p-3 bg-accent/10 rounded-xl shrink-0"><User size={20} className="text-accent" /></div>
+                  <div className="min-w-0">
+                    <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Client</span>
+                    <p className="text-slate-800 font-semibold text-sm mt-0.5 truncate">{selectedProject.client}</p>
                   </div>
                 </div>
-
-                {/* Progress card */}
-                <div className="bg-gradient-to-br from-primary via-primary to-primary-light rounded-2xl p-5 sm:p-6 text-white relative overflow-hidden">
-                  <div className="absolute -top-6 -right-6 w-24 h-24 bg-accent/20 rounded-full blur-2xl" />
-                  <div className="relative">
-                    <div className="flex items-start justify-between mb-4 gap-3">
-                      <div>
-                        <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-accent mb-1">
-                          Project Progress
-                        </div>
-                        <div className="text-2xl sm:text-3xl font-bold">
-                          {progressPct}%{" "}
-                          <span className="text-sm font-normal text-white/70">Complete</span>
-                        </div>
-                      </div>
-                      <div className="w-12 h-12 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
-                        <Award size={22} className="text-accent" />
-                      </div>
-                    </div>
-                    <div className="w-full bg-white/15 h-3 rounded-full overflow-hidden">
-                      <div
-                        className="bg-gradient-to-r from-accent to-accent-light h-full transition-all duration-700 rounded-full"
-                        style={{
-                          width: `${Math.min(100, Math.max(0, progressPct))}%`,
-                        }}
-                      />
-                    </div>
+                <div className="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-100 shadow-sm">
+                  <div className="p-3 bg-accent/10 rounded-xl shrink-0"><MapPin size={20} className="text-accent" /></div>
+                  <div className="min-w-0">
+                    <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Location</span>
+                    <p className="text-slate-800 font-semibold text-sm mt-0.5 truncate">{selectedProject.location}</p>
                   </div>
-                </div>
-
-                {/* Project scope — quote-styled */}
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
-                      <Target size={16} className="text-accent" />
-                    </div>
-                    <h4 className="text-sm font-bold uppercase tracking-wider text-slate-900">
-                      Project Scope
-                    </h4>
-                  </div>
-                  <div className="border-l-4 border-accent bg-slate-50 rounded-r-xl p-4 sm:p-5">
-                    <p className="text-slate-700 text-sm sm:text-base leading-relaxed break-words whitespace-pre-wrap">
-                      {selectedProject.scope}
-                    </p>
-                  </div>
-                </div>
-
-                {/* CTA */}
-                <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
-                  <Link
-                    href="/contact"
-                    className="flex-1 inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary-light text-white font-semibold px-5 py-3 rounded-xl transition-all text-sm shadow-sm"
-                  >
-                    <Phone size={15} />
-                    Discuss a Similar Project
-                    <ArrowUpRight size={14} />
-                  </Link>
-                  <Link
-                    href="/projects"
-                    className="inline-flex items-center justify-center gap-2 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 font-semibold px-5 py-3 rounded-xl transition-all text-sm"
-                  >
-                    View All Projects
-                  </Link>
                 </div>
               </div>
+
+              {/* Scope Box */}
+              <div className="pt-2">
+                <div className="flex items-center gap-2 mb-3">
+                  <Target size={18} className="text-slate-400" />
+                  <h4 className="text-base font-bold text-slate-900">Project Scope</h4>
+                </div>
+                <p className="text-slate-600 text-[15px] leading-relaxed whitespace-pre-wrap">
+                  {selectedProject.scope}
+                </p>
+              </div>
+
             </div>
-          );
-        })()}
+          </div>
+        )}
       </Modal>
     </>
   );

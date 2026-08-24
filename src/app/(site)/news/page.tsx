@@ -74,29 +74,29 @@ export default function NewsPage() {
                 const showImg = hasImage(imgUrl);
                 return (
                   <AnimateOnScroll key={post.id} delay={i * 100}>
-                    <div className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-400 hover:-translate-y-2 group h-full flex flex-col border border-slate-100">
-                      <div className="relative h-52 overflow-hidden">
+                    <button onClick={() => setSelected(post)} className="w-full text-left bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-2 group h-full flex flex-col border border-slate-100">
+                      <div className="relative aspect-[4/3] sm:aspect-video w-full overflow-hidden bg-slate-100">
                         {showImg ? (
-                          <Image src={imgUrl} alt={post.title} fill className="object-cover group-hover:scale-110 transition-transform duration-500" unoptimized loading="lazy" />
+                          <Image src={imgUrl} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform duration-700" unoptimized loading="lazy" />
                         ) : (
-                          <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
-                            <Newspaper size={48} className="text-slate-400" />
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <Newspaper size={48} className="text-slate-300" />
                           </div>
                         )}
-                        <span className="absolute top-4 left-4 glass-elevated text-white text-xs font-bold px-3 py-1 rounded-full">{post.category}</span>
+                        <span className="absolute top-4 left-4 glass-elevated text-white text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wide">{post.category}</span>
                       </div>
                       <div className="p-6 flex-1 flex flex-col">
-                        <div className="flex items-center gap-4 text-xs text-slate-400 mb-3">
-                          <span className="flex items-center gap-1"><Calendar size={12} />{post.date}</span>
-                          <span className="flex items-center gap-1"><User size={12} />{post.author}</span>
+                        <div className="flex items-center gap-4 text-xs text-slate-400 font-medium mb-3">
+                          <span className="flex items-center gap-1.5"><Calendar size={14} />{post.date}</span>
+                          <span className="flex items-center gap-1.5"><User size={14} />{post.author}</span>
                         </div>
-                        <h3 className="font-bold text-primary text-lg mb-3 group-hover:text-accent transition-colors line-clamp-2">{post.title}</h3>
-                        <p className="text-slate-500 text-sm leading-relaxed flex-1 line-clamp-3">{post.excerpt}</p>
-                        <button onClick={() => setSelected(post)} className="mt-4 text-accent font-semibold text-sm flex items-center gap-1 hover:gap-2 transition-all">
-                          Read More <ArrowRight size={14} />
-                        </button>
+                        <h3 className="font-bold text-primary text-lg mb-3 group-hover:text-accent transition-colors line-clamp-2 leading-snug">{post.title}</h3>
+                        <p className="text-slate-500 text-[15px] leading-relaxed flex-1 line-clamp-3">{post.excerpt}</p>
+                        <div className="mt-5 text-accent font-semibold text-sm flex items-center gap-1.5 group-hover:gap-2.5 transition-all">
+                          Read Full Article <ArrowRight size={16} />
+                        </div>
                       </div>
-                    </div>
+                    </button>
                   </AnimateOnScroll>
                 );
               })}
@@ -105,26 +105,43 @@ export default function NewsPage() {
         </div>
       </section>
 
+      {/* Premium News Detail Modal */}
       <Modal open={!!selected} onClose={() => setSelected(null)} title={selected?.title}>
         {selected && (
-          <div>
-            <div className="relative h-56 sm:h-64">
+          <div className="pb-12 sm:pb-8">
+            <div className="relative w-full aspect-[4/3] sm:aspect-[21/9] bg-slate-100 overflow-hidden">
               {hasImage(getImageUrl(selected)) ? (
                 <Image src={getImageUrl(selected)} alt={selected.title} fill className="object-cover" unoptimized />
               ) : (
-                <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
-                  <ImageIcon size={60} className="text-slate-400" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <ImageIcon size={60} className="text-slate-300" />
                 </div>
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-primary-dark/60 to-transparent" />
+              {/* Category Badge over image */}
+              <span className="absolute bottom-4 left-4 z-[3] glass-elevated text-white text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wide">
+                {selected.category}
+              </span>
             </div>
-            <div className="p-6 sm:p-8">
-              <div className="flex items-center gap-4 text-xs text-slate-400 mb-3">
-                <span className="bg-accent/10 text-accent px-3 py-1 rounded-full font-medium">{selected.category}</span>
-                <span className="flex items-center gap-1"><Calendar size={12} />{selected.date}</span>
+
+            <div className="px-5 sm:px-8 pt-6 space-y-6">
+              {/* Meta information row */}
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-3 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">
+                  <Calendar size={18} className="text-accent" />
+                  {selected.date}
+                </div>
+                <div className="flex items-center gap-2 text-slate-500 text-sm font-medium">
+                  <User size={18} className="text-accent" />
+                  {selected.author}
+                </div>
               </div>
-              <h2 className="text-2xl font-bold text-primary mb-4">{selected.title}</h2>
-              <p className="text-slate-600 leading-relaxed">{selected.content || selected.excerpt}</p>
+
+              {/* Main article content */}
+              <div className="prose prose-slate max-w-none">
+                <p className="text-slate-700 text-[15px] sm:text-base leading-relaxed whitespace-pre-wrap">
+                  {selected.content || selected.excerpt}
+                </p>
+              </div>
             </div>
           </div>
         )}

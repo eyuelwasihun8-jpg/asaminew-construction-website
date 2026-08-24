@@ -2,7 +2,16 @@
 
 import { useState, type FormEvent } from "react";
 import {
-  Phone, Mail, MapPin, Clock, Send, CheckCircle, Loader2, MessageCircle,
+  Phone,
+  Mail,
+  MapPin,
+  Clock,
+  Send,
+  CheckCircle,
+  Loader2,
+  MessageCircle,
+  ExternalLink,
+  Navigation,
 } from "lucide-react";
 import PageHero from "@/components/ui/PageHero";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
@@ -11,6 +20,16 @@ import { companyInfo } from "@/lib/data";
 import { images } from "@/lib/images";
 import { getDb } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+
+/** Official company location (Google Maps short link) */
+const MAPS_LINK = "https://maps.app.goo.gl/cMgfksvbLqxD2CE38";
+
+/**
+ * Embed that points at the same place as the short link.
+ * output=embed works without an API key and follows the shared place.
+ */
+const MAP_EMBED_SRC =
+  "https://maps.google.com/maps?q=https%3A%2F%2Fmaps.app.goo.gl%2FcMgfksvbLqxD2CE38&z=16&output=embed";
 
 export default function ContactPage() {
   const [submitting, setSubmitting] = useState(false);
@@ -37,7 +56,6 @@ export default function ContactPage() {
         return;
       }
 
-      // ✅ Write DIRECTLY to Firestore — no API route
       const db = getDb();
       const docRef = await addDoc(collection(db, "contacts"), {
         name,
@@ -72,6 +90,7 @@ export default function ContactPage() {
     <>
       <PageHero title="Contact Us" breadcrumb="Home" image={images.hero.contact} />
 
+      {/* Contact info cards */}
       <section className="py-16 bg-white">
         <div className="section-container">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 -mt-24 relative z-20">
@@ -83,7 +102,9 @@ export default function ContactPage() {
                   </div>
                   <h3 className="font-bold text-primary mb-2">{item.title}</h3>
                   {item.lines.map((line, li) => (
-                    <p key={li} className="text-slate-500 text-sm break-all">{line}</p>
+                    <p key={li} className="text-slate-500 text-sm break-words">
+                      {line}
+                    </p>
                   ))}
                 </div>
               </AnimateOnScroll>
@@ -92,25 +113,38 @@ export default function ContactPage() {
         </div>
       </section>
 
+      {/* Form + Map */}
       <section className="py-20 bg-slate-50">
         <div className="section-container">
-          <div className="grid lg:grid-cols-2 gap-12">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
+            {/* Contact form */}
             <AnimateOnScroll animation="animate-fade-in-left">
-              <div className="glass-white rounded-3xl shadow-xl p-8 sm:p-10">
+              <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-8 lg:p-10 h-full">
                 <div className="flex items-center gap-3 mb-8">
-                  <MessageCircle size={28} className="text-accent" />
-                  <div>
-                    <h2 className="text-2xl font-bold text-primary">Send Us a Message</h2>
-                    <p className="text-slate-500 text-sm">We&apos;ll get back to you within 24 hours</p>
+                  <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center shrink-0">
+                    <MessageCircle size={24} className="text-accent" />
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="text-xl sm:text-2xl font-bold text-primary">
+                      Send Us a Message
+                    </h2>
+                    <p className="text-slate-500 text-sm mt-0.5">
+                      We&apos;ll get back to you within 24 hours
+                    </p>
                   </div>
                 </div>
 
                 {submitted ? (
                   <div className="text-center py-12">
                     <CheckCircle size={64} className="text-accent mx-auto mb-6" />
-                    <h3 className="text-xl font-bold text-primary mb-3">Message Sent!</h3>
-                    <p className="text-slate-500 mb-6">Thank you for reaching out. We will respond shortly.</p>
+                    <h3 className="text-xl font-bold text-primary mb-3">
+                      Message Sent!
+                    </h3>
+                    <p className="text-slate-500 mb-6">
+                      Thank you for reaching out. We will respond shortly.
+                    </p>
                     <button
+                      type="button"
                       onClick={() => setSubmitted(false)}
                       className="btn-primary"
                     >
@@ -121,19 +155,26 @@ export default function ContactPage() {
                   <form onSubmit={handleSubmit} className="space-y-5">
                     <div className="grid sm:grid-cols-2 gap-5">
                       <div>
-                        <label htmlFor="contact-name" className="block text-sm font-medium text-slate-700 mb-1.5">
+                        <label
+                          htmlFor="contact-name"
+                          className="block text-sm font-medium text-slate-700 mb-1.5"
+                        >
                           Your Name *
                         </label>
                         <input
                           id="contact-name"
                           name="name"
                           required
-                          className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all"
+                          autoComplete="name"
+                          className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all bg-white"
                           placeholder="Full name"
                         />
                       </div>
                       <div>
-                        <label htmlFor="contact-email" className="block text-sm font-medium text-slate-700 mb-1.5">
+                        <label
+                          htmlFor="contact-email"
+                          className="block text-sm font-medium text-slate-700 mb-1.5"
+                        >
                           Email *
                         </label>
                         <input
@@ -141,38 +182,52 @@ export default function ContactPage() {
                           name="email"
                           type="email"
                           required
-                          className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all"
+                          autoComplete="email"
+                          className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all bg-white"
                           placeholder="your@email.com"
                         />
                       </div>
                     </div>
+
                     <div className="grid sm:grid-cols-2 gap-5">
                       <div>
-                        <label htmlFor="contact-phone" className="block text-sm font-medium text-slate-700 mb-1.5">
+                        <label
+                          htmlFor="contact-phone"
+                          className="block text-sm font-medium text-slate-700 mb-1.5"
+                        >
                           Phone
                         </label>
                         <input
                           id="contact-phone"
                           name="phone"
-                          className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all"
+                          type="tel"
+                          autoComplete="tel"
+                          className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all bg-white"
                           placeholder="+251..."
                         />
                       </div>
                       <div>
-                        <label htmlFor="contact-subject" className="block text-sm font-medium text-slate-700 mb-1.5">
+                        <label
+                          htmlFor="contact-subject"
+                          className="block text-sm font-medium text-slate-700 mb-1.5"
+                        >
                           Subject *
                         </label>
                         <input
                           id="contact-subject"
                           name="subject"
                           required
-                          className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all"
+                          className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all bg-white"
                           placeholder="How can we help?"
                         />
                       </div>
                     </div>
+
                     <div>
-                      <label htmlFor="contact-message" className="block text-sm font-medium text-slate-700 mb-1.5">
+                      <label
+                        htmlFor="contact-message"
+                        className="block text-sm font-medium text-slate-700 mb-1.5"
+                      >
                         Message *
                       </label>
                       <textarea
@@ -180,19 +235,24 @@ export default function ContactPage() {
                         name="message"
                         required
                         rows={5}
-                        className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all resize-none"
+                        className="w-full border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all resize-none bg-white"
                         placeholder="Write your message..."
                       />
                     </div>
+
                     <button
                       type="submit"
                       disabled={submitting}
                       className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {submitting ? (
-                        <><Loader2 size={18} className="animate-spin" /> Sending...</>
+                        <>
+                          <Loader2 size={18} className="animate-spin" /> Sending...
+                        </>
                       ) : (
-                        <><Send size={18} /> Send Message</>
+                        <>
+                          <Send size={18} /> Send Message
+                        </>
                       )}
                     </button>
                   </form>
@@ -200,23 +260,56 @@ export default function ContactPage() {
               </div>
             </AnimateOnScroll>
 
+            {/* Map card */}
             <AnimateOnScroll animation="animate-fade-in-right">
-              <div className="glass-white rounded-3xl shadow-xl overflow-hidden h-full min-h-[500px] flex flex-col">
-                <div className="p-6 border-b border-slate-100">
-                  <h3 className="font-bold text-primary text-lg">Our Location</h3>
-                  <p className="text-slate-500 text-sm mt-1">{companyInfo.address}</p>
+              <div className="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden flex flex-col h-full min-h-[480px] sm:min-h-[560px]">
+                {/* Header */}
+                <div className="p-5 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shrink-0">
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-primary text-lg flex items-center gap-2">
+                      <MapPin size={20} className="text-accent shrink-0" />
+                      Our Location
+                    </h3>
+                    <p className="text-slate-500 text-sm mt-1 break-words">
+                      {companyInfo.address}
+                    </p>
+                  </div>
+
+                  <a
+                    href={MAPS_LINK}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center gap-2 shrink-0 px-4 py-2.5 rounded-xl bg-accent text-primary-dark text-sm font-bold shadow-md shadow-accent/20 hover:bg-accent-light active:scale-[0.98] transition-all"
+                  >
+                    <Navigation size={16} />
+                    Get Directions
+                    <ExternalLink size={14} className="opacity-70" />
+                  </a>
                 </div>
-                <div className="flex-1 relative min-h-[400px]">
+
+                {/* Map — fixed height box so iframe always paints */}
+                <div className="relative flex-1 w-full min-h-[320px] sm:min-h-[400px] bg-slate-100">
                   <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3940.8567455837773!2d38.73!3d8.98!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x164b85cef5ab402d%3A0x8467b6b037a24d49!2sAddis%20Ababa%2C%20Ethiopia!5e0!3m2!1sen!2s!4v1700000000000!5m2!1sen!2s"
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0, position: "absolute", inset: 0 }}
-                    allowFullScreen
+                    src={MAP_EMBED_SRC}
+                    title="Company office location"
+                    className="absolute inset-0 w-full h-full border-0"
                     loading="lazy"
+                    allowFullScreen
                     referrerPolicy="no-referrer-when-downgrade"
-                    title="Office Location"
                   />
+                </div>
+
+                {/* Footer link */}
+                <div className="px-5 sm:px-6 py-3 border-t border-slate-100 bg-slate-50 shrink-0">
+                  <a
+                    href={MAPS_LINK}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-accent font-semibold hover:underline inline-flex items-center gap-1.5"
+                  >
+                    Open in Google Maps
+                    <ExternalLink size={14} />
+                  </a>
                 </div>
               </div>
             </AnimateOnScroll>
